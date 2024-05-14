@@ -5,7 +5,7 @@ const app = express()
 const port = process.env.PORT || 3000
 
 const corsOptions = {
-  origin: ['http://localhost:5173'],
+  origin: ['http://localhost:5173', 'https://career-cove.netlify.app'],
   credentials: true,
   optionSuccessStatus: 200,
 }
