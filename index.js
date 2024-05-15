@@ -1,5 +1,7 @@
 const express = require('express')
 const cors = require('cors')
+const jwt = require('jsonwebtoken')
+const cookie = require('cookie-parser')
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000
@@ -13,8 +15,6 @@ const corsOptions = {
 app.use(cors(corsOptions))
 app.use(express.json())
 
-// Job-Seeking
-// wP58kMJU8354Z8X5
 
 
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
@@ -36,6 +36,22 @@ async function run() {
     const applyingJobsCollection = client.db("jobSeeking").collection("applyingJobs");
     const customerReview = client.db("jobSeeking").collection("Customer Review");
 
+
+    // jwt generate
+
+    app.post('/jwt', async (req, res) => {
+      const user = req.body
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: '7d'
+      })
+      res.cookie('token', token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+      })
+        .send({ success: true })
+
+    })
     app.get('/jobs', async (req, res) => {
 
       const cursor = jobsCollection.find();
@@ -82,10 +98,10 @@ async function run() {
       res.send(result);
     })
 
-    app.patch("/updateStatus/:id", async(req, res) => {
+    app.patch("/updateStatus/:id", async (req, res) => {
       const id = req.params.id
       const status = req.body
-      const query = {_id: new ObjectId(id)}
+      const query = { _id: new ObjectId(id) }
       const updateDoc = {
         $set: status,
       }
@@ -110,7 +126,7 @@ async function run() {
     //         res.send(result)
     // });
 
-    
+
 
     app.post('/jobs', async (req, res) => {
       const jobs = req.body
@@ -125,11 +141,11 @@ async function run() {
       res.send(result)
     })
 
-    app.put('/jobs/:id', async(req, res) => {
+    app.put('/jobs/:id', async (req, res) => {
       const id = req.params.id
       const jobData = req.body
       const query = { _id: new ObjectId(id) }
-      const options = {upsert: true}
+      const options = { upsert: true }
       const updateDoc = {
         $set: {
           ...jobData,
@@ -139,7 +155,7 @@ async function run() {
       const result = await jobsCollection.updateOne(query, updateDoc, options)
       res.send(result)
     })
-    
+
     await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
