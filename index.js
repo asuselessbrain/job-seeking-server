@@ -1,7 +1,5 @@
 const express = require('express')
 const cors = require('cors')
-const jwt = require('jsonwebtoken')
-const cookie = require('cookie-parser')
 require('dotenv').config()
 const app = express()
 const port = process.env.PORT || 3000
@@ -37,21 +35,6 @@ async function run() {
     const customerReview = client.db("jobSeeking").collection("Customer Review");
 
 
-    // jwt generate
-
-    app.post('/jwts', async (req, res) => {
-      const {email} = req.body
-      const token = jwt.sign({email}, process.env.ACCESS_TOKEN_SECRET, {
-        expiresIn: '7d'
-      })
-      res.cookie('token', token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
-      })
-        .send({ success: true })
-
-    })
     app.get('/jobs', async (req, res) => {
 
       const cursor = jobsCollection.find();
